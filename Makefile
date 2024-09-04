@@ -6,7 +6,8 @@ LINT = cpplint
 
 B = bin
 
-SRCS = 	main/main.cc parser/driver.cc parser/nodes.cc
+SRCS = 	main/main.cc parser/driver.cc parser/nodes.cc \
+		eval/interpreter.cc eval/result.cc eval/env.cc
 SCAN 	= parser/scanner.ll
 PARSE 	= parser/parser.yy
 SCANCC 	= $(SCAN:parser/%.ll=$(B)/%.cc)

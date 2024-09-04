@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "eval/result.h"
 #include "visitor.h"
 
 #define ACCEPT_IMPL(cls) void cls::Accept(Visitor &visitor) { visitor.Visit(this); }
@@ -62,7 +63,7 @@ DUMP_HEADER(NLet) {
 ACCEPT_IMPL(NLet)
 
 DUMP_HEADER(NLetRec) {
-    os << "(" << "let rec " << var_ << " = ";
+    os << "(" << "let rec " << fun_ << " " << var_ << " = ";
     bexpr_->Dump(os);
     if (!IsDec()) {
         os << " in ";
@@ -153,3 +154,9 @@ DUMP_HEADER(NWithHandle) {
 }
 ACCEPT_IMPL(NWithHandle)
 
+DUMP_HEADER(NValue) {
+    os << "(";
+    value_->Dump(os);
+    os << ")";
+}
+ACCEPT_IMPL(NValue)

@@ -23,5 +23,6 @@ public:
     virtual VISIT_DEC(NHandler) = 0;
     virtual VISIT_DEC(NOpCase) = 0;
     virtual VISIT_DEC(NWithHandle) = 0;
+    virtual VISIT_DEC(NValue) = 0;
 };
 

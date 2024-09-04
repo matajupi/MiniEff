@@ -80,10 +80,8 @@ dec:
         { $$ = new NLet($2, $4); }
     | "let" "ident" "ident" "=" expr
         { $$ = new NLet($2, new NFun($3, $5)); }
-    | "let" "rec" "ident" "=" expr
-        { $$ = new NLetRec($3, $5); }
     | "let" "rec" "ident" "ident" "=" expr
-        { $$ = new NLetRec($3, new NFun($4, $6)); }
+        { $$ = new NLetRec($3, $4, $6); }
     | %empty
         { $$ = new NUnit(); }
     | dec ";;" dec
@@ -104,10 +102,8 @@ topexpr:
         { $$ = new NLet($2, $4, $6); }
     | "let" "ident" "ident" "=" expr "in" expr
         { $$ = new NLet($2, new NFun($3, $5), $7); }
-    | "let" "rec" "ident" "=" expr "in" expr
-        { $$ = new NLetRec($3, $5, $7); }
     | "let" "rec" "ident" "ident" "=" expr "in" expr
-        { $$ = new NLetRec($3, new NFun($4, $6), $8); }
+        { $$ = new NLetRec($3, $4, $6, $8); }
     | "if" expr "then" expr "else" expr
         { $$ = new NCond($2, $4, $6); }
     | "with" expr "handle" expr

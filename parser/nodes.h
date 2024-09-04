@@ -4,6 +4,8 @@
 #include <ostream>
 #include <vector>
 
+#include "eval/decs.h"
+
 #define DUMP_DECL void Dump(std::ostream &os) const
 #define ACCEPT_DECL void Accept(Visitor &visitor)
 
@@ -144,16 +146,17 @@ private:
 
 class NLetRec : public Node {
 public:
-    NLetRec(std::string var, Node *bexpr, Node *cexpr)
-        : var_(var), bexpr_(bexpr), cexpr_(cexpr) { }
-    NLetRec(std::string var, Node *bexpr)
-        : NLetRec(var, bexpr, nullptr) { }
+    NLetRec(std::string fun, std::string var, Node *bexpr, Node *cexpr)
+        : fun_(fun), var_(var), bexpr_(bexpr), cexpr_(cexpr) { }
+    NLetRec(std::string fun, std::string var, Node *bexpr)
+        : NLetRec(fun, var, bexpr, nullptr) { }
     ~NLetRec() override {
         delete bexpr_;
         delete cexpr_;
     }
 
     bool IsDec() const { return cexpr_ == nullptr; }
+    std::string GetFun() const { return fun_; }
     std::string GetVar() const { return var_; }
     Node *GetBexpr() const { return bexpr_; }
     Node *GetCexpr() const { return cexpr_; }
@@ -162,6 +165,7 @@ public:
     ACCEPT_DECL override;
 
 private:
+    std::string fun_;
     std::string var_;
     Node *bexpr_;
     Node *cexpr_;
@@ -302,7 +306,7 @@ public:
         : opname_(""), var_(var), body_(body) { }
     NOpCase(std::string opname, std::string var, std::string cont, Node *body)
         : opname_(opname), var_(var), cont_(cont), body_(body) { }
-    ~NOpCase() {
+    ~NOpCase() override {
         delete body_;
     }
 
@@ -325,7 +329,7 @@ class NWithHandle : public Node {
 public:
     NWithHandle(Node *handler, Node *cexpr)
         : handler_(handler), cexpr_(cexpr) { }
-    ~NWithHandle() {
+    ~NWithHandle() override {
         delete handler_;
         delete cexpr_;
     }
@@ -339,5 +343,19 @@ public:
 private:
     Node *handler_;
     Node *cexpr_;
+};
+
+class NValue : public Node {
+public:
+    NValue(ResultPtr value) : value_(value) { }
+    ~NValue() override { }
+
+    ResultPtr GetValue() const { return value_; }
+
+    DUMP_DECL override;
+    ACCEPT_DECL override;
+
+private:
+    ResultPtr value_;
 };
 

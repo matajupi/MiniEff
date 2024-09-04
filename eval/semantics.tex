@@ -1,0 +1,222 @@
+\documentclass[dvipdfmx]{jsarticle}
+
+\usepackage{silence}
+\WarningFilter{caption}{Unknown document}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{stmaryrd}
+\usepackage{ascmac}
+\usepackage{bm}
+\usepackage{bussproofs}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{latexsym}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{multicol}
+\usepackage{subcaption}
+\usepackage{tcolorbox}
+\usepackage{xcolor}
+
+\makeatletter
+% 図番号を"<章番号>.<図番号>" へ
+\renewcommand{\thefigure}{\thesubsection.\arabic{figure}}
+\renewcommand{\thetable}{\thesubsection.\arabic{table}}
+% 章が進むごとに図番号をリセットする
+\@addtoreset{figure}{section}
+\@addtoreset{table}{section}
+\@addtoreset{figure}{subsection}
+\@addtoreset{table}{subsection}
+\makeatother
+% TODO
+\newcommand{\todo}[1]{\textcolor{magenta}{TODO: #1}}
+\newcommand{\rel}[4]{#1, #2 $\vdash$ #3 $\Downarrow$ #4}
+% ソースコードの表示設定
+\lstset{
+    language={Python},
+    basicstyle={\ttfamily\small},
+    keywordstyle={\color{blue}},
+    commentstyle={\color{green}},
+    stringstyle=\color{red},
+    tabsize=4,
+    breaklines=true,
+}
+
+% Title
+\title{MiniEffの操作的意味論}
+\date{\today}
+
+% Document
+\begin{document}
+\maketitle
+
+% Contents
+Computation c \\
+Value v \\
+Result r ::= Val v $|$ Eff op v (x.c) \\
+Environment E \\
+Effect signature $\Sigma$ \\
+
+(int)
+\AxiomC{\rel{E}{$\Sigma$}{i}{Val i}}
+\DisplayProof \\
+(bool)
+\AxiomC{\rel{E}{$\Sigma$}{b}{Val b}}
+\DisplayProof \\
+(unit)
+\AxiomC{\rel{E}{$\Sigma$}{()}{Val ()}}
+\DisplayProof \\
+(val)
+\AxiomC{\rel{E}{$\Sigma$}{Val v}{Val v}}
+\DisplayProof \\
+(var)
+\AxiomC{\rel{E}{$\Sigma$}{x}{Val v} (x $\in$ dom(E), E(x) = v)}
+\DisplayProof \\
+(opc)
+\AxiomC{\rel{E}{$\Sigma$}{op}{Val (Op op)} (op $\in$ $\Sigma$)}
+\DisplayProof \\
+(fun)
+\AxiomC{\rel{E}{$\Sigma$}{fun x $\rightarrow$ c}{Val (Cls E x c)}}
+\DisplayProof \\
+(handler)
+\AxiomC{\rel{E}{$\Sigma$}{handler ocs}{Val (Han E ocs)}}
+\DisplayProof \\
+(pair-val)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Val v1}}
+\AxiomC{\rel{E}{$\Sigma$}{c2}{Val v2}}
+\BinaryInfC{\rel{E}{$\Sigma$}{(c1, c2)}{Val (v1, v2)}}
+\DisplayProof \\
+(pair-eff-left)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Eff op v (x.c)}}
+\UnaryInfC{\rel{E}{$\Sigma$}{(c1, c2)}{Eff op v (x.(c, c2))}}
+\DisplayProof \\
+(pair-eff-right)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Val v}}
+\AxiomC{\rel{E}{$\Sigma$}{c2}{Eff op v' (x.c)}}
+\BinaryInfC{\rel{E}{$\Sigma$}{(c1, c2)}{Eff op v' (x.(Val v, c))}}
+\DisplayProof \\
+(let-val)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Val v}}
+\AxiomC{\rel{E\{x:v\}}{$\Sigma$}{c2}{r}}
+\BinaryInfC{\rel{E}{$\Sigma$}{let x = c1 in c2}{r}}
+\DisplayProof \\
+(let-eff)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Eff op v (y.c)}}
+\UnaryInfC{\rel{E}{$\Sigma$}{let x = c1 in c2}{Eff op v (y.let x = c in c2)}}
+\DisplayProof \\
+(let rec)
+\AxiomC{\rel{E\{f:Rec E f x c1)\}}{$\Sigma$}{c2}{r}}
+\UnaryInfC{\rel{E}{$\Sigma$}{let rec f x = c1 in c2}{r}}
+\DisplayProof \\
+(cond-true)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Val true}}
+\AxiomC{\rel{E}{$\Sigma$}{c2}{r2}}
+\BinaryInfC{\rel{E}{$\Sigma$}{if c1 then c2 else c3}{r2}}
+\DisplayProof \\
+(cond-false)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Val false}}
+\AxiomC{\rel{E}{$\Sigma$}{c3}{r3}}
+\BinaryInfC{\rel{E}{$\Sigma$}{if c1 then c2 else c3}{r3}}
+\DisplayProof \\
+(cond-eff)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Eff op v (x.c)}}
+\UnaryInfC{\rel{E}{$\Sigma$}{if c1 then c2 else c3}{Eff op v (x.if c then c2 else c3}}
+\DisplayProof \\
+(unary)
+\AxiomC{\rel{E}{$\Sigma$}{c}{Val v}}
+\UnaryInfC{\rel{E}{$\Sigma$}{+ c}{Val prim(+, v)}}
+\DisplayProof \\
+(unary-eff)
+\AxiomC{\rel{E}{$\Sigma$}{c}{Eff op v (x.c')}}
+\UnaryInfC{\rel{E}{$\Sigma$}{+ c}{Eff op v (x.+ c')}}
+\DisplayProof \\
+(binary)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Val v1}}
+\AxiomC{\rel{E}{$\Sigma$}{c2}{Val v2}}
+\BinaryInfC{\rel{E}{$\Sigma$}{c1 + c2}{Val prim(+, v1, v2)}}
+\DisplayProof \\
+(binary-left)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Eff op v (x.c)}}
+\UnaryInfC{\rel{E}{$\Sigma$}{c1 + c2}{Eff op v (x.c + c2)}}
+\DisplayProof \\
+(binary-right)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Val v1}}
+\AxiomC{\rel{E}{$\Sigma$}{c2}{Eff op v (x.c)}}
+\BinaryInfC{\rel{E}{$\Sigma$}{c1 + c2}{Eff op v (x.(Val v1) + c)}}
+\DisplayProof \\
+(app-cls)
+\AxiomC{\rel{E1}{$\Sigma$}{c1}{Val (Cls E2 x c)}}
+\AxiomC{\rel{E1}{$\Sigma$}{c2}{Val v2}}
+\AxiomC{\rel{E2\{x:v2\}}{$\Sigma$}{c}{r}}
+\TrinaryInfC{\rel{E1}{$\Sigma$}{c1 c2}{r}}
+\DisplayProof \\
+(app-rec) \\
+\AxiomC{\rel{E1}{$\Sigma$}{c1}{Val (Rec E2 f x c)}}
+\AxiomC{\rel{E1}{$\Sigma$}{c2}{Val v2}}
+\AxiomC{\rel{E2\{f:(Rec E2 f x c), x:v2\}}{$\Sigma$}{c}{r}}
+\TrinaryInfC{\rel{E1}{$\Sigma$}{c1 c2}{r}}
+\DisplayProof \\
+(op-call)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Val (Op op)}}
+\AxiomC{\rel{E}{$\Sigma$}{c2}{Val v}}
+\BinaryInfC{\rel{E}{$\Sigma$}{c1 c2}{Eff op v (x.x)}}
+\DisplayProof \\
+(app-eff)
+\AxiomC{\rel{E}{$\Sigma$}{c1}{Val v (vはClsかRecかOp)}}
+\AxiomC{\rel{E}{$\Sigma$}{c2}{Eff op v' (x.c)}}
+\BinaryInfC{\rel{E}{$\Sigma$}{c1 c2}{Eff op v' (x.(Val v) c)}}
+\DisplayProof \\
+(with-handle-val) \\
+\AxiomC{han = Han E' ocs}
+\noLine
+\UnaryInfC{\rel{E}{$\Sigma$}{h}{Val han}}
+\AxiomC{x $\rightarrow$ c' = valc(ocs)}
+\noLine
+\UnaryInfC{\rel{E}{$\Sigma\cup$sig(ocs)}{c}{Val v}}
+\AxiomC{\rel{E'\{x:v\}}{$\Sigma$}{c'}{r}}
+\TrinaryInfC{\rel{E}{$\Sigma$}{with h handle c}{r}}
+\DisplayProof \\
+(with-handle-eff) \\
+\AxiomC{han = Han E' ocs}
+\noLine
+\UnaryInfC{\rel{E}{$\Sigma$}{h}{Val han}}
+\AxiomC{opc(op, ocs) = op x k $\rightarrow$ c'}
+\AxiomC{\rel{E}{$\Sigma\cup$sig(ocs)}{c}{Eff op v (x.c'')}}
+\noLine
+\BinaryInfC{\rel{E'\{x:v, k:(fun x $\rightarrow$ with (Val han) handle c'')\}}
+    {$\Sigma$}{c'}{r}}
+\BinaryInfC{\rel{E}{$\Sigma$}{with h handle c}{r}}
+\DisplayProof \\
+(with-handle-out) \\
+\AxiomC{han = Han E' ocs}
+\noLine
+\UnaryInfC{\rel{E}{$\Sigma$}{h}{Val han}}
+\AxiomC{opc(op, ocs) = nil}
+\noLine
+\UnaryInfC{\rel{E}{$\Sigma\cup$sig(ocs)}{c}{Eff op v (x.c'')}}
+\BinaryInfC{\rel{E}{$\Sigma$}{with h handle c}
+    {Eff op v (x.with (Val han) handle c'')}}
+\DisplayProof \\
+
+\begin{align*}
+&valc(nil) = nil \\
+&valc(x \rightarrow c | ocs) = x \rightarrow c \\
+&valc(\_ | ocs) = valc(ocs) \\
+\end{align*}
+
+\begin{align*}
+&opc(op, nil) = nil \\
+&opc(op, op\;x\;k \rightarrow c | ocs) = op\;x\;k \rightarrow c \\
+&opc(op, \_ | ocs) = opc(op, ocs) \\
+\end{align*}
+
+\begin{align*}
+&sig(nil) = \{\} \\
+&sig(op\;x\;k \rightarrow c | ocs) = \{op\} \cup sig(ocs) \\
+&sig(\_ | ocs) = sig(ocs) \\
+\end{align*}
+\end{document}
+
